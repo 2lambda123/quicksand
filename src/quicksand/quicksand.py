@@ -697,9 +697,8 @@ class quicksand:
                         decrypted_file = crypto.decrypt(temp.name, crypto.DEFAULT_PASSWORDS)
                         if decrypted_file != None:
                             quicksand.msg (self,"ole file decrypted")
-                            #print(decrypted_file)
-                            buf = open(decrypted_file, "rb")
-                            doc = buf.read()
+                            with open(decrypted_file, "rb") as buf:
+                                doc = buf.read()
                             #ole = olefile.OleFileIO(doc)
                             myloc = str(loc) + "-oledecrypted"
                             self.structure += "oledecrypted"
