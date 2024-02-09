@@ -59,10 +59,37 @@ class quicksand:
         pdfyara = 'quicksand_pdf.yara'
     
     def msg(self, m):
+        """"This function prints a message if the debug mode is enabled.
+        Parameters:
+            - self (object): The object containing the debug mode.
+            - m (str): The message to be printed.
+        Returns:
+            - None: This function does not return any value.
+        Processing Logic:
+            - Prints message if debug mode is on.
+            - Uses current time for timestamp.
+            - Message is converted to string.
+            - Only prints if debug mode is enabled.""""
+        
         if self.debug:
             print(str(time.time()) + ": " + str(m))
 
     def readFile(self, filename):
+        """Reads a file and returns its contents as a byte string.
+        Parameters:
+            - filename (str): The name of the file to be read.
+        Returns:
+            - doc (bytes): The contents of the file as a byte string.
+        Processing Logic:
+            - Open file in read-only mode.
+            - Read the contents of the file.
+            - Close the file.
+            - If an error occurs, print an error message and return an empty byte string.
+        Example:
+            doc = readFile("example.txt")
+            print(doc)
+            # b'This is an example file.'"""
+        
         try:
             f = open(filename, "rb")
             doc = f.read()
@@ -73,6 +100,25 @@ class quicksand:
             return b''
     
     def readDir(directory,capture=False,strings=True, debug=False, timeout=0, exploityara=None, execyara=None,pdfyara=None, password=None):
+        """Reads a directory and processes each file using the quicksand function.
+        Parameters:
+            - directory (str): Path to the directory containing the files to be processed.
+            - capture (bool): Optional. Whether to capture the output of the quicksand function. Default is False.
+            - strings (bool): Optional. Whether to extract strings from the files. Default is True.
+            - debug (bool): Optional. Whether to print debug messages. Default is False.
+            - timeout (int): Optional. Timeout for the quicksand function in seconds. Default is 0 (no timeout).
+            - exploityara (str): Optional. Path to a YARA rule file for exploit detection. Default is None.
+            - execyara (str): Optional. Path to a YARA rule file for executable detection. Default is None.
+            - pdfyara (str): Optional. Path to a YARA rule file for PDF detection. Default is None.
+            - password (str): Optional. Password for encrypted files. Default is None.
+        Returns:
+            - out (dict): A dictionary containing the results of the quicksand function for each file in the directory.
+        Processing Logic:
+            - Uses the quicksand function to process each file in the directory.
+            - Optional parameters can be used to customize the processing.
+            - Results are stored in a dictionary with the file name as the key.
+            - Uses YARA rules for exploit, executable, and PDF detection."""
+        
         out = {}
         for f in listdir(directory):
             fname = join(directory, f)
@@ -85,9 +131,41 @@ class quicksand:
 
 
     def mapStructure(self, parent, loc):
+        """Maps the structure of a parent element to a specified location.
+        Parameters:
+            - parent (element): The parent element whose structure will be mapped.
+            - loc (str): The location where the structure will be mapped to.
+        Returns:
+            - None: This function does not return any value.
+        Processing Logic:
+            - Maps parent element to specified location.
+            - No return value.
+            - No additional processing logic."""
+        
         None
 
     def __init__(self, data, capture=False,strings=True, debug=False, timeout=0, exploityara=None, execyara=None,pdfyara=None, password=None):
+        """Parameters:
+            - data (str or file): The data to be analyzed, can be a string or a file path.
+            - capture (bool): Optional, determines whether to capture streams.
+            - strings (bool): Optional, determines whether to extract strings.
+            - debug (bool): Optional, determines whether to print debug statements.
+            - timeout (int): Optional, sets the timeout for analysis.
+            - exploityara (str): Optional, file path for yara rules for exploit detection.
+            - execyara (str): Optional, file path for yara rules for execution detection.
+            - pdfyara (str): Optional, file path for yara rules for PDF detection.
+            - password (str): Optional, password for encrypted files.
+        Returns:
+            - results (dict): A dictionary containing the results of the analysis.
+            - structure (dict): A dictionary containing the structure of the analyzed data.
+        Processing Logic:
+            - Initializes the results and structure dictionaries.
+            - Sets the capture, strings, debug, and timeout variables.
+            - If capture is True, adds a 'streams' key to the results dictionary.
+            - Checks if the data parameter is a file or a string and sets the appropriate variables.
+            - Sets the exploityara, execyara, and pdfyara variables.
+            - Compiles the yara rules for exploit, execution, and PDF detection."""
+        
         self.results = {'results' : {}}
         self.structure = {}
 
@@ -127,10 +205,41 @@ class quicksand:
 
 
     def carve(item, separator):
+        """"Split a string by a given separator and return a list of strings without the separator.
+        Parameters:
+            - item (str): String to be split.
+            - separator (str): Character or substring to split the string by.
+        Returns:
+            - list: List of strings after splitting the original string by the separator.
+        Processing Logic:
+            - Splits the string by the given separator.
+            - Filters out any empty strings.
+            - Adds the separator back to each string in the list.
+            - Returns the final list of strings.
+        Example:
+            >>> carve("apple,banana,orange", ",")
+            [",apple", ",banana", ",orange"]""""
+        
         return [separator+e for e in item.split(separator) if e]
 
 
     def scan_exploit(self, item, loc):
+        """Scans the provided item for any potential exploits using the YARA exploit rules. Returns a dictionary of results including the number of exploits found, the exploit score, and any relevant information about the exploit.
+        Parameters:
+            - item (str): The item to be scanned for exploits.
+            - loc (str): The location of the item being scanned.
+        Returns:
+            - results (dict): A dictionary containing the number of exploits found, the exploit score, and any relevant information about the exploit.
+        Processing Logic:
+            - Matches the provided item against the YARA exploit rules.
+            - Checks for any relevant metadata such as description, MITRE information, rank, and type.
+            - Updates the results dictionary with the relevant information.
+            - Prints a message for each exploit found.
+        Example:
+            results = scan_exploit(item, loc)
+            print(results)
+            # Output: {'exploit': 1, 'score': 5, 'results': {'C:\\Windows\\System32\\exploit.exe': [{'rule': 'exploit_rule', 'desc': 'This is an exploit', 'type': 'exploit', 'mitre': 'CVE-1234'}]}}"""
+        
         matches = self.exploitrules.match(data=item)
 
         if matches:
@@ -202,6 +311,19 @@ class quicksand:
 
 
     def scan_exec(self, item, loc):
+        """Scan and execute a given item at a specified location, returning any matches found and updating the results dictionary with relevant information.
+        Parameters:
+            - item (str): The item to be scanned and executed.
+            - loc (str): The location where the item will be executed.
+        Returns:
+            - matches (list): A list of matches found during execution.
+        Processing Logic:
+            - Matches are determined by using the execrules regex pattern.
+            - Relevant information is extracted from the matches and stored in the results dictionary.
+            - The results dictionary is updated with the number of matches found for each type (execute, exploit, warning, feature) and the total score based on the rank of each match.
+            - If the location already exists in the results dictionary, the match information is appended to the existing list. Otherwise, a new list is created.
+            - If the strings flag is set to True, the match information will also include the strings used in the regex pattern."""
+        
         matches = self.execrules.match(data=item)
 
         if matches:
@@ -271,6 +393,20 @@ class quicksand:
 
 
     def scan_pdf(self, item, loc):
+        """Scans a PDF file for potential security threats and returns a dictionary of results.
+        Parameters:
+            - item (str): The PDF file to be scanned.
+            - loc (str): The location of the PDF file.
+        Returns:
+            - results (dict): A dictionary containing the results of the scan, including the number of potential threats found, the overall score, and a list of any identified threats.
+        Processing Logic:
+            - Matches the provided PDF file against a set of rules.
+            - Extracts relevant information from the matched rules, such as description, MITRE ID, and rank.
+            - Updates the results dictionary with the extracted information.
+            - If the provided location is already in the results dictionary, appends the new information to the existing list of results. Otherwise, creates a new entry in the dictionary.
+            - Increases the score based on the rank of the matched rule.
+            - Returns the updated results dictionary."""
+        
         matches = self.pdfrules.match(data=item)
 
         if matches:
@@ -340,6 +476,76 @@ class quicksand:
 
 
     def analyse_pdf(self, doc, loc):
+        """Function:
+        def analyse_pdf(self, doc, loc):
+            Analyzes a PDF document for potential malicious content.
+            Parameters:
+                - doc (str): The PDF document to be analyzed.
+                - loc (str): The location of the PDF document.
+            Returns:
+                - None: Does not return any value.
+            Processing Logic:
+                - Scans the PDF document for any potential malicious content.
+                - Parses out any hidden PDF objects.
+                - Validates that there are no hidden PDF objects.
+                - Captures any streams within the PDF document.
+                - Logs any errors encountered during the analysis.
+            try:
+                # Scan the PDF document for any potential malicious content.
+                quicksand.scan_pdf(self, doc, str(loc))
+                # Parse the PDF document.
+                try:
+                    if self.password != None:
+                        pdf = PDFDocument(doc, password=self.password)
+                    else:
+                        pdf = PDFDocument(doc)
+                except:
+                    pdf = PDFDocument(doc)
+                # Extract the structure of the PDF document.
+                for block in re.findall(b'((\x0a|\x0d|\x20)(\\d{1,4})[^\\d]{1,3}(\\d{1,2})\\sobj|(\x0a|\x0d)(xref|trailer)(\x0a|\x0d))',doc):
+                    if len(block[2]) != 0:
+                        num = int(block[2])
+                        gen = int(block[3])
+                        quicksand.msg (self,"obj " + str(num) + " " + str(gen))
+                        self.structure += str(num) + "-" + str(gen) + ","
+                    else:
+                        self.structure += block[5].decode("utf-8")  + ","
+                        quicksand.msg (self,"obj " + str(block[5].decode("utf-8")) )
+                # Validate that there are no hidden PDF objects by parsing them out.
+                for block in re.findall(b'((\x0a|\x0d|\x20)(\\d{1,4})[^\\d]{1,3}(\\d{1,2})\\sobj(\x0a|\x0d|\x20)<<[^>]{1,200}\x2fFilter)',doc):
+                    quicksand.msg(self, block)
+                    if self.timeout > 0 and time.time() - self.results['started'] > self.timeout:
+                        self.results['skip'] = 1
+                        continue
+                    # Extract the stream within the PDF document.
+                    if block[2]:
+                        num = int(block[2])
+                        gen = int(block[3])
+                        quicksand.msg (self,"stream " + str(num) + " " + str(gen))
+                        try:
+                            raw_obj = pdf.locate_object(num, gen)
+                            obj = pdf.build(raw_obj)
+                        except Exception as e:
+                            quicksand.msg(self, e)
+                        try:
+                            if type(obj) == pdfreader.types.objects.StreamBasedObject:
+                                # Scan the stream for any potential malicious content.
+                                quicksand.scan_pdf(self, obj.filtered,str(loc) + "-pdf_" + str(num) + "_" + str(gen))
+                                if self.capture:
+                                    self.results['streams'][str(loc) + "-pdf_" + str(num) + "_" + str(gen)] = obj.filtered
+                        except Exception as e:
+                            quicksand.msg(self, e)
+                    else:
+                        None
+            except Exception as e:
+                # Log any errors encountered during the analysis.
+                quicksand.msg(self, "Error parsing PDF due to " + str(e))
+                # Add a warning to the results if the PDF is malformed.
+                if loc in self.results['results']:
+                    self.results['results'][loc].append({'rule': "pdf_malformed", 'desc': "WARNING: PDF is malformed", 'strings': '', 'type': 'structure'})
+                else:
+                    self.results['results'][loc] = [{'rule': "pdf_malformed", 'desc': "WARNING: PDF is malformed", 'strings': '', 'type': 'structure'}]"""
+        
         try:
             quicksand.scan_pdf(self, doc, str(loc))
             #consider removing the obfuscated content here rather than in yara
@@ -414,6 +620,18 @@ class quicksand:
 
 
     def analyse_openxml(self, doc,loc):
+        """Analyse OpenXML files for malware and return results.
+        Parameters:
+            - doc (bytes): Bytes of the OpenXML file to be analysed.
+            - loc (str): Location of the OpenXML file.
+        Returns:
+            - str: "ok" if analysis is successful, otherwise returns an error message.
+        Processing Logic:
+            - Extracts files from OpenXML using zipfile module.
+            - Checks if extracted file is larger than 10 bytes.
+            - Calls quicksand.analyse() function to scan for malware.
+            - If self.capture is True, adds results to self.results dictionary."""
+        
         try:
             filebytes = BytesIO(doc)
             myzipfile = zipfile.ZipFile(filebytes,allowZip64=True)
@@ -433,6 +651,17 @@ class quicksand:
     
     
     def rtf_block(self, block, loc):
+        """This function decodes a hex block into bytes and scans for embedded OLE and OpenXML files. It also extracts any found files and adds them to the results dictionary.
+        Parameters:
+            - block (bytes): The hex block to be decoded.
+            - loc (str): The location of the block.
+        Returns:
+            - None: This function does not return any values, but it updates the results dictionary with any extracted files.
+        Processing Logic:
+            - Decode the hex block into bytes.
+            - Scan for embedded OLE and OpenXML files.
+            - Extract any found files and add them to the results dictionary."""
+        
         # decode a hex block into bytes
         try:
             obj = bytes.fromhex(re.sub(rb'[ \x0a\x0d]', b'', block).decode('utf8'))
@@ -503,6 +732,26 @@ class quicksand:
 
 
     def analyse_rtf(self, doc, loc):
+        """Analyse RTF file for exploits and other malicious content.
+        Parameters:
+            - doc (bytes): The RTF file to be analysed.
+            - loc (str): The location of the RTF file.
+        Returns:
+            - None: The function does not return any value.
+        Processing Logic:
+            - Scan for exploits and other malicious content.
+            - Fix for oletools rtf parse c88d0f7d623b2a2c066dd6b15597d1f4c44d89e7a8e660e28c3494f441826ea5.
+            - Fix for oletools ignoring ods streams.
+            - Fix for oletools ignoring datastore streams.
+            - Parse the RTF file using rtfobj.RtfObjParser.
+            - Scan for exploits and other malicious content in the parsed objects.
+            - If the object is a package, add it to the results and scan for exploits.
+            - If the object has a clsid, add it to the results and scan for exploits.
+            - If the object has olepkgdata, add it to the results and scan for exploits and executable code.
+            - If the object has oledata, analyse it recursively.
+            - Otherwise, scan the object for exploits and other malicious content.
+            - If an exception occurs, print the error message and traceback."""
+        
         #quicksand.msg (self,"Rtf")
 
         quicksand.msg(self, doc[:100])
@@ -579,6 +828,17 @@ class quicksand:
             quicksand.msg(self, traceback.format_exc())
 
     def explode_gfinflate(item):
+        """Explodes a compressed item using the gfinflate algorithm.
+        Parameters:
+            - item (bytes): A compressed item to be exploded.
+        Returns:
+            - bytes: The exploded item.
+        Processing Logic:
+            - Loops through the first 54 bytes of the item.
+            - Attempts to decompress the item using the gfinflate algorithm.
+            - If successful, returns the decompressed item.
+            - If unsuccessful, returns an empty bytes object."""
+        
         for i in range(0,54):
             try:
                 #quicksand.msg(self, i)
@@ -590,6 +850,16 @@ class quicksand:
         return b''
 
     def explode_gzuncompress(item): #ActiveMime
+        """Explodes gzuncompress item.
+        Parameters:
+            - item (bytes): A compressed item to be decompressed.
+        Returns:
+            - bytes: The decompressed item.
+        Processing Logic:
+            - Loops through 54 possible compression levels.
+            - Attempts to decompress the item using zlib.
+            - If unsuccessful, returns an empty bytes object."""
+        
         for i in range(0,54):
             try:
                 return zlib.decompress(item[i:])
@@ -598,6 +868,20 @@ class quicksand:
         return b''
 
     def analyse_mso(self, doc, loc):
+        """Analyse MSO files for malicious content.
+        Parameters:
+            - doc (bytes): The MSO file to be analysed.
+            - loc (str): The location of the MSO file.
+        Returns:
+            - None: The function does not return any value.
+        Processing Logic:
+            - Scans the MSO file for exploits and executes them.
+            - Searches for blocks of at least 1024 characters.
+            - Decodes and analyses blocks starting with 'mso' or containing 'ActiveMime'.
+            - If self.capture is True, stores the results in self.results['streams'].
+        Example:
+            analyse_mso(doc, "C:/Users/Username/Documents/file.mso")"""
+        
         quicksand.scan_exploit(self, doc, str(loc))
         quicksand.scan_exec(self, doc, str(loc))
 
@@ -634,6 +918,24 @@ class quicksand:
 
 
     def analyse_ps(self, doc,loc):
+        """Analyse PowerShell scripts for exploits and execution, and store the results in a dictionary.
+        Parameters:
+            - self (object): The current instance of the class.
+            - doc (bytes): The PowerShell script to be analysed.
+            - loc (int): The location of the script, if applicable.
+        Returns:
+            - results (dict): A dictionary containing the results of the analysis.
+        Processing Logic:
+            - Scans the script for exploits and execution.
+            - Converts the script into bytes and scans for exploits and execution.
+            - Analyses the script and stores the results in a dictionary.
+            - If self.capture is True, the script is stored in the results dictionary.
+            - Increments the value of i for each iteration.
+        Example:
+            results = analyse_ps(self, doc, loc)
+            print(results)
+            # Output: {'streams': {'1-pshex0': b'...', '1-pshex1': b'...', ...}}"""
+        
         quicksand.scan_exploit(self, doc,loc)
         quicksand.scan_exec(self, doc,loc)
         i = 0
@@ -649,6 +951,20 @@ class quicksand:
 
 
     def dobiff(self, excel_stream, data):
+        """Function:
+        def dobiff(self, excel_stream, data):
+            Searches for XLM macros and hidden sheets in an Excel file.
+            Parameters:
+                - excel_stream (str): The name of the Excel file.
+                - data (str): The data to be analyzed.
+            Returns:
+                - xlm_macros (list): A list of XLM macros and hidden sheets found in the Excel file.
+            Processing Logic:
+                - Uses the oletools.thirdparty.oledump.plugin_biff.cBIFF class to analyze the data.
+                - Searches for "Excel 4.0 macro sheet" in the analyzed data.
+                - If found, runs the plugin_biff again to search for labels and DCONN objects.
+                - Returns a list of all XLM macros and hidden sheets found."""
+        
         from oletools.thirdparty.oledump.plugin_biff import cBIFF
 
         try:
@@ -673,6 +989,8 @@ class quicksand:
 
 
     def analyse_ole(self, doc, loc):
+        """"""
+        
         quicksand.scan_exploit(self, doc,loc)
         quicksand.scan_exec(self, doc,loc)
         hwp = False
@@ -885,6 +1203,19 @@ class quicksand:
                     
 
     def metadata(self):
+        """Calculates metadata for a given file.
+        Parameters:
+            - self (object): The current instance of the class.
+        Returns:
+            - results (dict): A dictionary containing the calculated metadata for the file.
+        Processing Logic:
+            - Calculates the MD5, SHA1, SHA256, and SHA512 hashes of the file.
+            - Determines the size of the file.
+            - Records the start time of the process.
+            - Retrieves the version of the quicksand library.
+            - Retrieves the modification times of the YARA rules used for exploit, executable, and PDF detection.
+            - Records the first 16 bytes of the file as a hexadecimal string."""
+        
         self.results['md5'] = hashlib.md5(self.data).hexdigest()
         self.results['sha1'] = hashlib.sha1(self.data).hexdigest()
         self.results['sha256'] = hashlib.sha256(self.data).hexdigest()
